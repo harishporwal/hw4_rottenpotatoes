@@ -14,6 +14,7 @@ Rottenpotatoes::Application.routes.draw do
   #   resources :products
   resources :movies
   post 'movies/search_tmdb'
+  match ':controller/:id/find_movies_with_same_director' => 'movies#find_movies_with_same_director'
   # Sample resource route with options:
   #   resources :products do
   #     member do

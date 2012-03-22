@@ -1,0 +1,22 @@
+%h1 Similar Movie Page
+%h3=@original_title
+- if @director_info != nil && @director_info != ''
+  - if @movies
+    %table#movies
+      %thead
+        %tr
+          %th Movie Title
+          %th Rating
+          %th Release Date 
+      %tbody
+        - @movies.each do |movie|
+          %tr
+            %td= movie.title 
+            %td= movie.rating
+            %td= movie.release_date
+  - else
+    %h3 No Movies Found
+- else
+= "'#{@original_title}' has no director info"
+%br
+= link_to 'Back to movie list', movies_path
