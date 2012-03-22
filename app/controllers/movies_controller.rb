@@ -7,27 +7,42 @@ class MoviesController < ApplicationController
   end
 
   def index
-    sort = params[:sort] || session[:sort]
-    case sort
-    when 'title'
-      ordering,@title_header = {:order => :title}, 'hilite'
-    when 'release_date'
-      ordering,@date_header = {:order => :release_date}, 'hilite'
-    end
-    @all_ratings = Movie.all_ratings
-    @selected_ratings = params[:ratings] || session[:ratings] || {}
-
-    if params[:sort] != session[:sort]
-      session[:sort] = sort
-      redirect_to :sort => sort, :ratings => @selected_ratings and return
+    #if the filter settings & sorting is not present,check if it is stored in session and react
+    if session.has_key?(:sid) && !params[:ratings] && !params["sort_order"]
+      parameters = Hash.new()
+      parameters[:ratings] = session[:ratings] unless !session[:ratings]
+      parameters["sort_order"] = session[:sort_order] unless !session[:sort_order]
+      redirect_to movies_path(parameters) unless parameters.empty?
     end
 
-    if params[:ratings] != session[:ratings] and @selected_ratings != {}
-      session[:sort] = sort
-      session[:ratings] = @selected_ratings
-      redirect_to :sort => sort, :ratings => @selected_ratings and return
+    #construct the find conditions and order for the query
+    if params[:ratings]
+      conditions = ["rating in (?)", params[:ratings].keys]
     end
-    @movies = Movie.find_all_by_rating(@selected_ratings.keys, ordering)
+    if params["sort_order"]
+      sort_order = params["sort_order"]
+    end
+    #execute the find query
+    @movies = Movie.find(:all, :conditions => conditions, :order => sort_order)
+    
+    #set the other instance variables required - sorted & all_ratings
+    @all_ratings = Movie.unique_ratings.map {|movies| movies[:rating]}
+    @sorted = {sort_order => 1}
+    
+    @rated = Hash.new(false)
+    if params[:ratings]
+      params[:ratings].keys.each { |rating| @rated[rating] = true}
+    end
+
+    #store the passed parameters in the session
+    if !session.has_key?(:sid)
+      session[:sid] = "saasbook-session"
+    else  
+      session.delete(:ratings)
+      session.delete(:sort_order)
+    end
+    session[:ratings] = params[:ratings]
+    session[:sort_order] = params["sort_order"] 
   end
 
   def new
@@ -57,5 +72,7 @@ class MoviesController < ApplicationController
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
   end
-
+  def search_tmdb
+    @movies = Movie.find_in_tmdb(params[:search_terms])
+  end
 end
