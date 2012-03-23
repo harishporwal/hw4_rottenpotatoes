@@ -6,9 +6,12 @@ class Movie < ActiveRecord::Base
     #self.all(:group => :rating).uniq
     self.select("DISTINCT(RATING)")
   end
-  def self.movies_with_the_same_director_as_this_movie(id)
-    if Movie.find_by_id(id).director
-      movies = Movie.find(:all, :conditions =>"director = '#{Movie.find_by_id(id).director}' and id != #{id}")
+  def self.similar_movies(id)
+    if id
+      movie = Movie.find_by_id(id)
+      if movie && movie.director && movie.director != ''
+        movies = Movie.find(:all, :conditions =>"director = '#{movie.director}' and id != #{id}")
+      end
     end
   end
 end

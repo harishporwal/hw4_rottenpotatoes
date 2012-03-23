@@ -76,8 +76,13 @@ class MoviesController < ApplicationController
     @movies = Movie.find_in_tmdb(params[:search_terms])
   end
   def find_movies_with_same_director
-    @movies = Movie.movies_with_the_same_director_as_this_movie(Movie.find_by_id(params[:id]).id)
-    @original_title = Movie.find_by_id(params[:id]).title
-    @director_info = Movie.find_by_id(params[:id]).director
+    if params[:id]
+      @movies = Movie.similar_movies(params[:id])
+      movie = Movie.find_by_id(params[:id])
+      if movie
+        @original_title = movie.title
+        @director_info = movie.director
+      end
+    end
   end
 end

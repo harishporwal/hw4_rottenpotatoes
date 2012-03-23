@@ -1,7 +1,6 @@
 %h1 Similar Movie Page
-%h3=@original_title
 - if @director_info != nil && @director_info != ''
-  - if @movies
+  - if @movies && @movies.length > 0
     %table#movies
       %thead
         %tr
@@ -17,6 +16,6 @@
   - else
     %h3 No Movies Found
 - else
-= "'#{@original_title}' has no director info"
+  = "'#{@original_title}' has no director info"
 %br
 = link_to 'Back to movie list', movies_path
